@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FanZone – Login</title>
-  <link rel="icon" type="image/jpeg" href="assets/favicon.jpg" />
+  <link rel="icon" type="image/jpeg" href="assets/fanzone.jpg" />
   <link rel="stylesheet" href="assets/css/auth.css" />
   <script src="assets/js/theme.js"></script>
 </head>
