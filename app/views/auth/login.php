@@ -57,7 +57,7 @@
         </form>
 
         <p class="auth-hint">
-          New to the fandom? <a href="#" onclick="openRegister()">Join the community</a>
+          New to FanZone? <a href="#" onclick="openRegister()">Join the community</a>
         </p>
 
 

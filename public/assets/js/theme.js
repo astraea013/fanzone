@@ -1,5 +1,5 @@
 
-// Apply saved theme immediately (before render)
+
 (function () {
   const saved = localStorage.getItem('fz-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);

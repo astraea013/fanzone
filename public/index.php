@@ -10,7 +10,6 @@ require_once BASE_PATH . '/app/controllers/AuthController.php';
 require_once BASE_PATH . '/app/controllers/PostController.php';
 require_once BASE_PATH . '/app/controllers/ProfileController.php';
 require_once BASE_PATH . '/app/controllers/CommentController.php';
-require_once BASE_PATH . '/app/controllers/MessageController.php';
 
 
 $action = $_GET['action'] ?? 'newsfeed';
@@ -20,7 +19,7 @@ $auth = new AuthController();
 //$post = new PostController();
 //$profile = new ProfileController();
 //$comment = new CommentController();
-//$message = new MessageController();
+
 
 switch ($action) {
     // Auth
@@ -45,10 +44,6 @@ switch ($action) {
     // Profile
     case 'profile':     $profile->view(); break;
     case 'edit_profile':$profile->edit(); break;
-
-    // Messages
-    case 'messages':    $message->index(); break;
-    case 'send_message':$message->send(); break;
 
     // Search
     case 'search':      $post->search(); break;
