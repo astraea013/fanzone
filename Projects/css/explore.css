@@ -1,0 +1,79 @@
+/* ============================================================
+   explore.css — FanZone | Explore page styles
+   ============================================================ */
+
+/* ── Search ── */
+.search-wrap { position: relative; }
+.search-wrap svg {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted); width: 16px; height: 16px;
+    pointer-events: none;
+}
+.search-input {
+    width: 100%; background: var(--bg-secondary);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px 10px 38px;
+    color: var(--text-primary); font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s;
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--accent); }
+
+/* ── Fandoms Grid ── */
+.fandoms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.fandom-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+    transition: border-color 0.2s, background 0.2s;
+}
+.fandom-card:hover { border-color: var(--accent); background: var(--bg-hover); }
+
+.fdom-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 10px;
+}
+.fdom-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem; font-weight: 700; margin-bottom: 5px;
+}
+.fdom-badge {
+    display: inline-block; padding: 2px 9px;
+    border-radius: 20px; font-size: 0.68rem; font-weight: 600;
+}
+.badge-anime  { background: rgba(168,85,247,0.18); color: #c084fc; }
+.badge-games  { background: rgba(34,197,94,0.14);  color: #4ade80; }
+.badge-movies { background: rgba(251,146,60,0.14); color: #fb923c; }
+
+.hot-label {
+    font-size: 0.68rem; color: var(--orange);
+    font-weight: 600; display: flex; align-items: center; gap: 3px;
+}
+.fdom-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+}
+.members-txt {
+    font-size: 0.75rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: 5px;
+}
+.members-txt svg { width: 13px; height: 13px; }
+
+.btn-join {
+    background: linear-gradient(135deg, var(--accent), var(--accent-pink));
+    color: #fff; border: none; border-radius: 7px;
+    padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.2s;
+}
+.btn-join:hover { opacity: 0.85; }
+.btn-join.joined {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
