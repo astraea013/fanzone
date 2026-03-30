@@ -8,6 +8,7 @@ require_once BASE_PATH . '/app/controllers/AuthController.php';
 require_once BASE_PATH . '/app/controllers/PostController.php';
 require_once BASE_PATH . '/app/controllers/ProfileController.php';
 require_once BASE_PATH . '/app/controllers/CommentController.php';
+require_once BASE_PATH . '/app/controllers/SearchController.php';
 
 $action = $_GET['action'] ?? 'newsfeed';
 
@@ -16,6 +17,7 @@ $auth = new AuthController();
 $post = new PostController();
 $profile = new ProfileController();
 $comment = new CommentController();
+$search = new SearchController(); 
 
 switch ($action) {
     // Auth Routes
@@ -68,7 +70,7 @@ switch ($action) {
         $comment->delete();
         break;
         
-    // FIXED: Route get_comments to CommentController instead of PostController
+    
     case 'get_comments':
         AuthController::requireLogin();
         $comment->getComments();
@@ -92,17 +94,10 @@ switch ($action) {
         break;
 
     // Search
+       // Search
     case 'search':
         AuthController::requireLogin();
-        $post->search();
+        $search->search();
         break;
 
-    // Default
-    default:
-        if (isset($_SESSION['user_id'])) {
-            $post->newsfeed();
-        } else {
-            $auth->login();
-        }
-        break;
 }

@@ -114,14 +114,33 @@ class UserModel {
     }
 
     // Search users
-    public function searchUsers($keyword) {
-        $like = "%$keyword%";
-        $sql  = "SELECT id, username, full_name, profile_image, fandoms
-                 FROM users WHERE username LIKE ? OR full_name LIKE ?";
+       // Search users by username or full name
+    public function searchUsers($query) {
+        $searchTerm = "%{$query}%";
+        
+        $sql = "SELECT id, username, full_name, bio, profile_image, fandoms, created_at
+                FROM users 
+                WHERE username LIKE ? OR full_name LIKE ?
+                ORDER BY 
+                    CASE 
+                        WHEN username = ? THEN 1
+                        WHEN full_name = ? THEN 2
+                        ELSE 3
+                    END,
+                    username ASC
+                LIMIT 20";
+        
         $stmt = $this->db->prepare($sql);
         if (!$stmt) die("Query error (searchUsers): " . $this->db->error);
-        $stmt->bind_param("ss", $like, $like);
+        
+        $stmt->bind_param("ssss", $searchTerm, $searchTerm, $query, $query);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+        $result = $stmt->get_result();
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+        return $users;
     }
 }

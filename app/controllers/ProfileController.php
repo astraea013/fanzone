@@ -85,6 +85,8 @@ class ProfileController {
             return 'assets/uploads/profiles/' . $filename;
         }
 
+  
+
         return null;
     }
 }

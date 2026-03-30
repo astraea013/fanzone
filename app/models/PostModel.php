@@ -70,7 +70,7 @@ class PostModel {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Create post
+    // Create post - REMOVED: image parameter
     public function createPost($userId, $content, $fandomTag) {
         $sql  = "INSERT INTO posts (user_id, content, fandom_tag, created_at)
                  VALUES (?, ?, ?, NOW())";
@@ -131,30 +131,5 @@ class PostModel {
         return explode(',', $row['fandoms']);
     }
 
-    // Search posts
-    public function searchPosts($query, $limit = 20) {
-        $search = "%{$query}%";
-        $userId = $_SESSION['user_id'];
-        $sql = "SELECT
-                    p.*,
-                    u.username,
-                    u.full_name,
-                    u.profile_image AS user_avatar,
-                    (SELECT COUNT(*) FROM likes    WHERE post_id = p.id) AS like_count,
-                    (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count,
-                    (SELECT COUNT(*) FROM likes    WHERE post_id = p.id AND user_id = ?) AS user_liked
-                FROM posts p
-                JOIN users u ON p.user_id = u.id
-                WHERE p.content LIKE ? OR p.fandom_tag LIKE ? OR u.username LIKE ?
-                ORDER BY p.created_at DESC
-                LIMIT ?";
-
-        $stmt = $this->db->prepare($sql);
-        if (!$stmt) {
-            die("Query error (searchPosts): " . $this->db->error);
-        }
-        $stmt->bind_param("isssi", $userId, $search, $search, $search, $limit);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
+    
 }

@@ -157,9 +157,9 @@ require_once BASE_PATH . '/app/views/layouts/navbar.php';
   <aside class="sidebar-right">
     <div class="widget">
       <div class="widget-title">Trending Now</div>
-      <div class="trend-item"><span class="trend-rank">1</span><span class="trend-name">#DemonSlayer</span><span class="trend-count">2.4k</span></div>
+      <div class="trend-item"><span class="trend-rank">1</span><span class="trend-name">#OnePiece</span><span class="trend-count">2.4k</span></div>
       <div class="trend-item"><span class="trend-rank">2</span><span class="trend-name">#GenshinImpact</span><span class="trend-count">1.8k</span></div>
-      <div class="trend-item"><span class="trend-rank">3</span><span class="trend-name">#OnePiece</span><span class="trend-count">1.2k</span></div>
+      <div class="trend-item"><span class="trend-rank">3</span><span class="trend-name">#DemonSlayer</span><span class="trend-count">1.2k</span></div>
       <div class="trend-item"><span class="trend-rank">4</span><span class="trend-name">#BlueLock</span><span class="trend-count">856</span></div>
       <div class="trend-item"><span class="trend-rank">5</span><span class="trend-name">#SoloLeveling</span><span class="trend-count">642</span></div>
     </div>

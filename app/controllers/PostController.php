@@ -2,16 +2,19 @@
 require_once BASE_PATH . '/app/models/PostModel.php';
 require_once BASE_PATH . '/app/models/LikeModel.php';
 require_once BASE_PATH . '/app/models/CommentModel.php';
+require_once BASE_PATH . '/app/models/UserModel.php';
 
 class PostController {
     private $postModel;
     private $likeModel;
     private $commentModel;
+    private $userModel; 
 
     public function __construct() {
         $this->postModel    = new PostModel();
         $this->likeModel    = new LikeModel();
         $this->commentModel = new CommentModel();
+        $this->userModel    = new UserModel(); 
     }
 
     // Display newsfeed
@@ -23,7 +26,7 @@ class PostController {
         require_once BASE_PATH . '/app/views/posts/newsfeed.php';
     }
 
-    // Show create post form / handle submission
+    // Create post
     public function create() {
         AuthController::requireLogin();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,25 +35,23 @@ class PostController {
         require_once BASE_PATH . '/app/views/posts/create.php';
     }
 
-    // Handle create post submission
     private function handleCreate() {
         $userId    = $_SESSION['user_id'];
-        $content   = trim($_POST['content']    ?? '');
-        $fandomTag = $_POST['fandom_tag']      ?? 'Anime';
+        $content   = trim($_POST['content'] ?? '');
+        $fandomTag = $_POST['fandom_tag'] ?? 'Anime';
 
         if (empty($content)) {
             $error = 'Please write something before posting.';
             require_once BASE_PATH . '/app/views/posts/create.php';
             return;
         }
-        
+
         $this->postModel->createPost($userId, $content, $fandomTag, null);
-        
         header('Location: index.php?action=newsfeed');
         exit;
     }
 
-    // Show edit post form / handle submission
+    // Edit post
     public function edit() {
         AuthController::requireLogin();
         $userId = $_SESSION['user_id'];
@@ -70,7 +71,6 @@ class PostController {
         require_once BASE_PATH . '/app/views/posts/edit.php';
     }
 
-    // Handle edit post submission
     private function handleEdit($postId) {
         $content = trim($_POST['content'] ?? '');
         if (empty($content)) {
@@ -79,7 +79,7 @@ class PostController {
             require_once BASE_PATH . '/app/views/posts/edit.php';
             return;
         }
-        
+
         $this->postModel->updatePost($postId, $content);
         header('Location: index.php?action=newsfeed');
         exit;
@@ -95,11 +95,12 @@ class PostController {
             $this->commentModel->deleteCommentsByPostId($postId);
             $this->postModel->deletePost($postId);
         }
+
         header('Location: index.php?action=newsfeed');
         exit;
     }
 
-    // Like/unlike post (AJAX)
+    // Like post
     public function like() {
         header('Content-Type: application/json');
         $userId = $_SESSION['user_id'];
@@ -109,15 +110,6 @@ class PostController {
         exit;
     }
 
-
-    // Search posts
-    public function search() {
-        AuthController::requireLogin();
-        $query   = trim($_GET['q'] ?? '');
-        $results = [];
-        if (!empty($query)) {
-            $results = $this->postModel->searchPosts($query);
-        }
-        require_once BASE_PATH . '/app/views/search/results.php';
-    }
+    //  SEARCH
+    
 }

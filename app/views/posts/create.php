@@ -3,7 +3,6 @@ $pageTitle = 'Create Post';
 $pageStyles = ['assets/css/posts.css'];
 $pageScripts = ['assets/js/posts.js'];
 
-// Add session check
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -58,7 +57,7 @@ require_once BASE_PATH . '/app/views/layouts/navbar.php';
                 <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
-            <!-- REMOVED: enctype="multipart/form-data" - no longer needed -->
+
             <form class="create-post-form" method="POST" action="index.php?action=create_post">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? bin2hex(random_bytes(32))) ?>" />
                 
@@ -95,7 +94,6 @@ require_once BASE_PATH . '/app/views/layouts/navbar.php';
                     <small class="char-counter"><span id="charCount">0</span>/2000</small>
                 </div>
 
-                <!-- REMOVED: Image Preview section -->
 
                 <!-- Fandom Selection -->
                 <div class="form-group">
@@ -122,7 +120,7 @@ require_once BASE_PATH . '/app/views/layouts/navbar.php';
                     </div>
                 </div>
 
-                <!-- REMOVED: Image Upload section completely -->
+
 
                 <!-- Actions -->
                 <div class="form-actions">
