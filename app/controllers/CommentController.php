@@ -11,10 +11,15 @@ class CommentController {
     // Add comment (AJAX)
     public function add() {
         header('Content-Type: application/json');
-
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            exit;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-            return;
+            exit;
         }
 
         $userId  = $_SESSION['user_id'];
@@ -23,27 +28,32 @@ class CommentController {
 
         if (empty($content)) {
             echo json_encode(['success' => false, 'message' => 'Comment cannot be empty']);
-            return;
+            exit;
         }
 
         if ($postId === 0) {
             echo json_encode(['success' => false, 'message' => 'Invalid post']);
-            return;
+            exit;
         }
 
         $comment = $this->commentModel->addComment($userId, $postId, $content);
-
+        
         if ($comment) {
             echo json_encode(['success' => true, 'comment' => $comment]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to add comment']);
         }
+        exit;
     }
 
     // Get comments for a post (AJAX)
-    // FIX: Added missing getComments() method — was causing silent failure
     public function getComments() {
         header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in', 'comments' => []]);
+            exit;
+        }
 
         $postId = intval($_GET['post_id'] ?? 0);
 
@@ -53,8 +63,7 @@ class CommentController {
         }
 
         $comments = $this->commentModel->getCommentsByPostId($postId);
-
-        // Return consistent structure that posts.js expects
+        
         echo json_encode([
             'success'  => true,
             'post_id'  => $postId,
@@ -66,10 +75,15 @@ class CommentController {
     // Edit comment (AJAX)
     public function edit() {
         header('Content-Type: application/json');
-
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            exit;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-            return;
+            exit;
         }
 
         $userId    = $_SESSION['user_id'];
@@ -78,25 +92,31 @@ class CommentController {
 
         if (empty($content) || $commentId === 0) {
             echo json_encode(['success' => false, 'message' => 'Invalid data']);
-            return;
+            exit;
         }
 
         if (!$this->commentModel->isOwner($commentId, $userId)) {
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-            return;
+            exit;
         }
 
         $result = $this->commentModel->updateComment($commentId, $content);
-        echo json_encode(['success' => $result]);
+        echo json_encode(['success' => $result, 'message' => $result ? 'Comment updated' : 'Update failed']);
+        exit;
     }
 
-    // Delete comment (AJAX)
+    // Delete comment (AJAX) - FIXED VERSION
     public function delete() {
         header('Content-Type: application/json');
-
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            exit;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-            return;
+            exit;
         }
 
         $userId    = $_SESSION['user_id'];
@@ -104,15 +124,21 @@ class CommentController {
 
         if ($commentId === 0) {
             echo json_encode(['success' => false, 'message' => 'Invalid comment']);
-            return;
+            exit;
         }
 
+        // FIXED: Removed double "echo echo" - now single echo
         if (!$this->commentModel->isOwner($commentId, $userId)) {
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-            return;
+            exit;
         }
 
         $result = $this->commentModel->deleteComment($commentId);
-        echo json_encode(['success' => $result]);
+        echo json_encode([
+            'success' => $result, 
+            'message' => $result ? 'Comment deleted' : 'Delete failed',
+            'comment_id' => $commentId
+        ]);
+        exit;
     }
 }

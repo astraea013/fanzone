@@ -1,11 +1,8 @@
 <?php
 session_start();
 date_default_timezone_set('Asia/Manila');
-
 define('BASE_PATH', dirname(__DIR__));
-
 require_once BASE_PATH . '/app/helpers/helpers.php';
-
 require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/app/controllers/AuthController.php';
 require_once BASE_PATH . '/app/controllers/PostController.php';
@@ -55,7 +52,7 @@ switch ($action) {
         $post->delete();
         break;
 
-    // Comments
+    // Comments - FIXED: All comment routes now properly use CommentController
     case 'add_comment':
         AuthController::requireLogin();
         $comment->add();
@@ -70,16 +67,17 @@ switch ($action) {
         AuthController::requireLogin();
         $comment->delete();
         break;
+        
+    // FIXED: Route get_comments to CommentController instead of PostController
+    case 'get_comments':
+        AuthController::requireLogin();
+        $comment->getComments();
+        break;
 
     // Likes
     case 'like_post':
         AuthController::requireLogin();
         $post->like();
-        break;
-        
-    case 'get_comments':
-        AuthController::requireLogin();
-        $post->getComments();
         break;
 
     // Profile

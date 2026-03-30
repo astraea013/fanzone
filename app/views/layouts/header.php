@@ -22,6 +22,10 @@ $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : '
     <link rel="stylesheet" href="<?= $baseUrl . htmlspecialchars($style) ?>" />
   <?php endforeach; ?>
   <script src="<?= $baseUrl ?>assets/js/theme.js"></script>
+
+  <?php if (isset($_SESSION['user_id'])): ?>
+  <meta name="user-id" content="<?php echo $_SESSION['user_id']; ?>">
+<?php endif; ?>
 </head>
 <body>
 <div id="toast-container" class="toast-container"></div>

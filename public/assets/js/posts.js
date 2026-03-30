@@ -1,4 +1,3 @@
-
 // ── FANDOM TAG SELECTION
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.tag-btn').forEach(btn => {
@@ -11,15 +10,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ── GET BASE URL (absolute, works from any folder depth)
 function getBaseUrl() {
-  // Walk script tags to find our assets path
   const scripts = document.querySelectorAll('script[src]');
   for (const s of scripts) {
     if (s.src.includes('/assets/js/')) {
       return s.src.split('/assets/js/')[0] + '/';
     }
   }
-  
   return window.location.href.split('/index.php')[0] + '/';
+}
+
+// ── GET CURRENT USER ID FROM SESSION (add this meta tag in your HTML head)
+function getCurrentUserId() {
+  // Option 1: From meta tag (recommended - add to your header.php)
+  const meta = document.querySelector('meta[name="user-id"]');
+  if (meta) return parseInt(meta.content);
+  
+  // Option 2: From window object
+  return window.currentUserId || 0;
 }
 
 // ── SUBMIT QUICK POST FROM NEWSFEED
@@ -90,8 +97,7 @@ function toggleComments(postId) {
   }
 }
 
-// ── LOAD COMMENTS VIA AJAX
-
+// ── LOAD COMMENTS VIA AJAX (UPDATED with Edit/Delete buttons)
 function loadComments(postId) {
   fetch(getBaseUrl() + 'index.php?action=get_comments&post_id=' + postId)
     .then(r => r.json())
@@ -100,8 +106,8 @@ function loadComments(postId) {
       if (!list) return;
       list.innerHTML = '';
 
-      // FIX: handle both plain array and {success, comments:[]} format
       const comments = Array.isArray(data) ? data : (data.comments ?? []);
+      const currentUserId = getCurrentUserId();
 
       if (comments.length === 0) {
         list.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:8px 0;">No comments yet. Be the first!</p>';
@@ -116,16 +122,57 @@ function loadComments(postId) {
                style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
           : initials;
 
+        // Check if current user owns this comment
+        const isOwner = parseInt(c.user_id) === currentUserId;
+        
+        // Build action buttons HTML if owner
+        let actionsHtml = '';
+        if (isOwner) {
+          actionsHtml = `
+            <div class="comment-actions" style="display:flex;gap:8px;margin-left:auto;">
+              <button onclick="enableEditComment(${c.id}, ${postId})" 
+                      class="btn-edit-comment" 
+                      style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px;">
+                Edit
+              </button>
+              <button onclick="deleteComment(${c.id}, ${postId})" 
+                      class="btn-delete-comment" 
+                      style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:4px;">
+                Delete
+              </button>
+            </div>
+          `;
+        }
+
         const div = document.createElement('div');
         div.className = 'comment-item';
+        div.id = `comment-${c.id}`;
+        div.dataset.commentId = c.id;
         div.innerHTML = `
           <div class="post-avatar"
                style="width:30px;height:30px;font-size:11px;flex-shrink:0;">
             ${avatarHtml}
           </div>
-          <div class="comment-body">
-            <div class="comment-user">${escHtml(c.full_name)}</div>
-            <div class="comment-text">${escHtml(c.content)}</div>
+          <div class="comment-body" style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div class="comment-user" style="font-weight:600;color:var(--text-primary);font-size:13px;">
+                ${escHtml(c.full_name || c.username)}
+              </div>
+              ${actionsHtml}
+            </div>
+            <div class="comment-text" id="comment-text-${c.id}" style="color:var(--text-secondary);font-size:13px;margin-top:4px;word-break:break-word;">
+              ${escHtml(c.content)}
+            </div>
+            <div class="comment-edit-form" id="comment-edit-form-${c.id}" style="display:none;margin-top:8px;">
+              <input type="text" id="comment-edit-input-${c.id}" value="${escHtml(c.content)}" 
+                     style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-size:13px;">
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button onclick="submitEditComment(${c.id}, ${postId})" 
+                        style="padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Save</button>
+                <button onclick="cancelEditComment(${c.id})" 
+                        style="padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:6px;font-size:12px;cursor:pointer;">Cancel</button>
+              </div>
+            </div>
           </div>`;
         list.appendChild(div);
       });
@@ -133,8 +180,103 @@ function loadComments(postId) {
     .catch(err => console.error('Load comments error:', err));
 }
 
-// ── SUBMIT COMMENT
-// FIX: After success, reload comments so the new one appears immediately
+// ── ENABLE EDIT MODE FOR COMMENT
+function enableEditComment(commentId, postId) {
+  const textEl = document.getElementById(`comment-text-${commentId}`);
+  const formEl = document.getElementById(`comment-edit-form-${commentId}`);
+  const inputEl = document.getElementById(`comment-edit-input-${commentId}`);
+  
+  if (textEl && formEl) {
+    textEl.style.display = 'none';
+    formEl.style.display = 'block';
+    inputEl.focus();
+    inputEl.select();
+  }
+}
+
+// ── CANCEL EDIT MODE
+function cancelEditComment(commentId) {
+  const textEl = document.getElementById(`comment-text-${commentId}`);
+  const formEl = document.getElementById(`comment-edit-form-${commentId}`);
+  
+  if (textEl && formEl) {
+    textEl.style.display = 'block';
+    formEl.style.display = 'none';
+  }
+}
+
+// ── SUBMIT EDIT COMMENT (AJAX)
+function submitEditComment(commentId, postId) {
+  const input = document.getElementById(`comment-edit-input-${commentId}`);
+  const content = input?.value.trim();
+  
+  if (!content) {
+    alert('Comment cannot be empty');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('comment_id', commentId);
+  formData.append('content', content);
+
+  fetch(getBaseUrl() + 'index.php?action=edit_comment', {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      // Update the text and exit edit mode
+      const textEl = document.getElementById(`comment-text-${commentId}`);
+      textEl.textContent = content;
+      cancelEditComment(commentId);
+    } else {
+      alert(data.message || 'Failed to update comment');
+    }
+  })
+  .catch(err => {
+    console.error('Edit comment error:', err);
+    alert('Error updating comment');
+  });
+}
+
+// ── DELETE COMMENT (AJAX)
+function deleteComment(commentId, postId) {
+  if (!confirm('Delete this comment? This cannot be undone.')) return;
+
+  const formData = new FormData();
+  formData.append('comment_id', commentId);
+
+  fetch(getBaseUrl() + 'index.php?action=delete_comment', {
+    method: 'POST',
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      // Remove comment from DOM
+      const commentEl = document.getElementById(`comment-${commentId}`);
+      if (commentEl) {
+        commentEl.remove();
+      }
+      // Update comment counter
+      const card = document.querySelector(`[data-post-id="${postId}"]`);
+      const countEl = card?.querySelector('.comment-count');
+      if (countEl) {
+        const current = parseInt(countEl.textContent || 0);
+        countEl.textContent = Math.max(0, current - 1);
+      }
+    } else {
+      alert(data.message || 'Failed to delete comment');
+    }
+  })
+  .catch(err => {
+    console.error('Delete comment error:', err);
+    alert('Error deleting comment');
+  });
+}
+
+// ── SUBMIT COMMENT (UPDATED)
 function submitComment(postId) {
   const input   = document.getElementById('comment-input-' + postId);
   const content = input?.value.trim();
@@ -152,9 +294,7 @@ function submitComment(postId) {
   .then(data => {
     if (data.success) {
       input.value = '';
-      // Reload comments list so new comment appears
-      loadComments(postId);
-      // Update comment counter badge
+      loadComments(postId); // Reload to show new comment with actions
       const card    = document.querySelector(`[data-post-id="${postId}"]`);
       const countEl = card?.querySelector('.comment-count');
       if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
