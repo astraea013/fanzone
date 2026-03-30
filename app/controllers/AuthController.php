@@ -21,10 +21,11 @@ class AuthController {
                 $error = 'Please fill in all fields.';
             } else {
                 $result = $this->userModel->login($username, $password);
+
                 if ($result['success']) {
                     // Set session
-                    $_SESSION['user_id']   = $result['user']['id'];
-                    $_SESSION['username']  = $result['user']['username'];
+                    $_SESSION['user_id'] = $result['user']['id'];
+                    $_SESSION['username'] = $result['user']['username'];
                     $_SESSION['full_name'] = $result['user']['full_name'];
                     $_SESSION['profile_image'] = $result['user']['profile_image'];
 
@@ -47,10 +48,10 @@ class AuthController {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $full_name = trim($_POST['full_name'] ?? '');
-            $username  = trim($_POST['username'] ?? '');
-            $password  = $_POST['password'] ?? '';
-            $confirm   = $_POST['confirm_password'] ?? '';
-            $fandoms   = $_POST['fandoms'] ?? [];
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirm = $_POST['confirm_password'] ?? '';
+            $fandoms = $_POST['fandoms'] ?? [];
 
             // Validation
             if (empty($full_name) || empty($username) || empty($password)) {
@@ -65,10 +66,11 @@ class AuthController {
                 $error = 'Please select at least one fandom.';
             } else {
                 // Sanitize
-                $username  = htmlspecialchars($username);
+                $username = htmlspecialchars($username);
                 $full_name = htmlspecialchars($full_name);
 
                 $result = $this->userModel->register($username, $password, $full_name, $fandoms);
+
                 if ($result['success']) {
                     $success = 'Account created! You can now log in.';
                 } else {
@@ -87,7 +89,7 @@ class AuthController {
         exit;
     }
 
-    // Guard — redirect to login if not logged in
+    // Guard --- redirect to login if not logged in
     public static function requireLogin() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php?action=login');
@@ -95,4 +97,3 @@ class AuthController {
         }
     }
 }
-

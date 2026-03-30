@@ -1,9 +1,10 @@
 <?php
 session_start();
-
+date_default_timezone_set('Asia/Manila');
 
 define('BASE_PATH', dirname(__DIR__));
 
+require_once BASE_PATH . '/app/helpers/helpers.php';
 
 require_once BASE_PATH . '/config/database.php';
 require_once BASE_PATH . '/app/controllers/AuthController.php';
@@ -11,43 +12,94 @@ require_once BASE_PATH . '/app/controllers/PostController.php';
 require_once BASE_PATH . '/app/controllers/ProfileController.php';
 require_once BASE_PATH . '/app/controllers/CommentController.php';
 
-
 $action = $_GET['action'] ?? 'newsfeed';
 
-// Route map
+// Initialize controllers
 $auth = new AuthController();
-//$post = new PostController();
-//$profile = new ProfileController();
-//$comment = new CommentController();
-
+$post = new PostController();
+$profile = new ProfileController();
+$comment = new CommentController();
 
 switch ($action) {
-    // Auth
-    case 'login':       $auth->login(); break;
-    case 'register':    $auth->register(); break;
-    case 'logout':      $auth->logout(); break;
+    // Auth Routes
+    case 'login':
+        $auth->login();
+        break;
+        
+    case 'register':
+        $auth->register();
+        break;
+        
+    case 'logout':
+        $auth->logout();
+        break;
 
-/*
-    case 'newsfeed':    $post->newsfeed(); break;
-    case 'create_post': $post->create(); break;
-    case 'edit_post':   $post->edit(); break;
-    case 'delete_post': $post->delete(); break;
+    // Newsfeed & Posts
+    case 'newsfeed':
+        AuthController::requireLogin();
+        $post->newsfeed();
+        break;
+        
+    case 'create_post':
+        AuthController::requireLogin();
+        $post->create();
+        break;
+        
+    case 'edit_post':
+        AuthController::requireLogin();
+        $post->edit();
+        break;
+        
+    case 'delete_post':
+        AuthController::requireLogin();
+        $post->delete();
+        break;
 
     // Comments
-    case 'add_comment':    $comment->add(); break;
-    case 'edit_comment':   $comment->edit(); break;
-    case 'delete_comment': $comment->delete(); break;
+    case 'add_comment':
+        AuthController::requireLogin();
+        $comment->add();
+        break;
+        
+    case 'edit_comment':
+        AuthController::requireLogin();
+        $comment->edit();
+        break;
+        
+    case 'delete_comment':
+        AuthController::requireLogin();
+        $comment->delete();
+        break;
 
     // Likes
-    case 'like_post':   $post->like(); break;
+    case 'like_post':
+        AuthController::requireLogin();
+        $post->like();
+        break;
+        
+    case 'get_comments':
+        AuthController::requireLogin();
+        $post->getComments();
+        break;
 
     // Profile
-    case 'profile':     $profile->view(); break;
-    case 'edit_profile':$profile->edit(); break;
+    case 'profile':
+        AuthController::requireLogin();
+        $profile->view();
+        break;
+        
+    case 'edit_profile':
+        AuthController::requireLogin();
+        $profile->edit();
+        break;
 
     // Search
-    case 'search':      $post->search(); break;
-*/
+    case 'search':
+        AuthController::requireLogin();
+        $post->search();
+        break;
+
+    // Default
     default:
         if (isset($_SESSION['user_id'])) {
             $post->newsfeed();

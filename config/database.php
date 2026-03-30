@@ -1,24 +1,42 @@
 <?php
 class Database {
-    private $host = 'localhost';
-    private $db   = 'fanzone_db';
-    private $user = 'root';
-    private $pass = '';
-    private $conn;
+    private static $instance = null;
+    private $connection;
 
-    public function connect() {
-        $this->conn = null;
-        try {
-            $this->conn = new PDO(
-                "mysql:host={$this->host};dbname={$this->db};charset=utf8",
-                $this->user,
-                $this->pass
-            );
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
+    private function __construct() {
+        $host     = 'localhost';
+        $username = 'root';
+        $password = '';
+        $database = 'fanzone_db';
+
+        $this->connection = new mysqli($host, $username, $password, $database);
+
+        if ($this->connection->connect_error) {
+            die("Connection failed: " . $this->connection->connect_error);
         }
-        return $this->conn;
+
+        $this->connection->set_charset("utf8mb4");
+    }
+
+    // Get singleton instance
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    // Get database connection
+    public function getConnection() {
+        return $this->connection;
+    }
+
+    // Prevent cloning
+    private function __clone() {}
+
+    // Prevent unserializing
+    public function __wakeup() {
+        throw new Exception("Cannot unserialize singleton");
     }
 }
+?>

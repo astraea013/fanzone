@@ -2,89 +2,126 @@
 require_once BASE_PATH . '/config/database.php';
 
 class UserModel {
-    private $conn;
+    private $db;
 
     public function __construct() {
-        $db = new Database();
-        $this->conn = $db->connect();
-    }
-
-    // Register a new user
-    public function register($username, $password, $full_name, $fandoms) {
-        // Check if username already exists
-        $stmt = $this->conn->prepare("SELECT id FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        if ($stmt->fetch()) {
-            return ['success' => false, 'message' => 'Username already taken.'];
-        }
-
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $fandom_str = implode(',', $fandoms);
-
-        $stmt = $this->conn->prepare("
-            INSERT INTO users (username, password, full_name, fandoms)
-            VALUES (?, ?, ?, ?)
-        ");
-        $stmt->execute([$username, $hashed, $full_name, $fandom_str]);
-
-        return ['success' => true, 'message' => 'Account created successfully!'];
+        $this->db = Database::getInstance()->getConnection();
     }
 
     // Login user
     public function login($username, $password) {
-        $stmt = $this->conn->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
+        $sql  = "SELECT id, username, password, full_name, profile_image, fandoms
+                 FROM users WHERE username = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) die("Query error (login): " . $this->db->error);
 
-        if ($user && password_verify($password, $user['password'])) {
-            return ['success' => true, 'user' => $user];
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            return ['success' => false, 'message' => 'Invalid username or password'];
         }
 
-        return ['success' => false, 'message' => 'Invalid username or password.'];
+        $user = $result->fetch_assoc();
+        if (!password_verify($password, $user['password'])) {
+            return ['success' => false, 'message' => 'Invalid username or password'];
+        }
+
+        unset($user['password']);
+        return ['success' => true, 'user' => $user];
+    }
+
+    // Register new user
+    public function register($username, $password, $fullName, $fandoms = []) {
+        // Check if username exists
+        $stmt = $this->db->prepare("SELECT id FROM users WHERE username = ?");
+        if (!$stmt) die("Query error (register check): " . $this->db->error);
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            return ['success' => false, 'message' => 'Username already taken'];
+        }
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $fandomsString  = is_array($fandoms) ? implode(',', $fandoms) : $fandoms;
+
+        $sql  = "INSERT INTO users (username, password, full_name, fandoms) VALUES (?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) die("Query error (register insert): " . $this->db->error);
+        $stmt->bind_param("ssss", $username, $hashedPassword, $fullName, $fandomsString);
+
+        if (!$stmt->execute()) {
+            return ['success' => false, 'message' => 'Registration failed'];
+        }
+
+        return ['success' => true, 'user_id' => $stmt->insert_id];
     }
 
     // Get user by ID
-    public function getUserById($id) {
-        $stmt = $this->conn->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch();
+    public function getUserById($userId) {
+        $sql  = "SELECT id, username, full_name, bio, profile_image, fandoms, created_at
+                 FROM users WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) die("Query error (getUserById): " . $this->db->error);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
     }
 
-    // Get user by username
-    public function getUserByUsername($username) {
-        $stmt = $this->conn->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        return $stmt->fetch();
+    // Get user stats
+    public function getUserStats($userId) {
+        $stats = ['posts' => 0];
+        $stmt  = $this->db->prepare("SELECT COUNT(*) as count FROM posts WHERE user_id = ?");
+        if (!$stmt) die("Query error (getUserStats): " . $this->db->error);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $stats['posts'] = $stmt->get_result()->fetch_assoc()['count'];
+        return $stats;
+    }
+
+    // Get user fandoms — reads from users.fandoms column (comma-separated)
+    public function getUserFandoms($userId) {
+        $stmt = $this->db->prepare("SELECT fandoms FROM users WHERE id = ?");
+        if (!$stmt) die("Query error (getUserFandoms): " . $this->db->error);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        if (!$row || empty($row['fandoms'])) return [];
+        return explode(',', $row['fandoms']);
     }
 
     // Update profile
-    public function updateProfile($id, $full_name, $bio, $fandoms, $profile_image = null) {
-        $fandom_str = implode(',', $fandoms);
-        if ($profile_image) {
-            $stmt = $this->conn->prepare("
-                UPDATE users SET full_name=?, bio=?, fandoms=?, profile_image=?
-                WHERE id=?
-            ");
-            $stmt->execute([$full_name, $bio, $fandom_str, $profile_image, $id]);
+    public function updateProfile($userId, $fullName, $bio, $fandoms, $profileImage = null) {
+        $fandomsString = is_array($fandoms) ? implode(',', $fandoms) : $fandoms;
+
+        if ($profileImage) {
+            $sql  = "UPDATE users SET full_name=?, bio=?, profile_image=?, fandoms=? WHERE id=?";
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) die("Query error (updateProfile): " . $this->db->error);
+            $stmt->bind_param("ssssi", $fullName, $bio, $profileImage, $fandomsString, $userId);
         } else {
-            $stmt = $this->conn->prepare("
-                UPDATE users SET full_name=?, bio=?, fandoms=?
-                WHERE id=?
-            ");
-            $stmt->execute([$full_name, $bio, $fandom_str, $id]);
+            $sql  = "UPDATE users SET full_name=?, bio=?, fandoms=? WHERE id=?";
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) die("Query error (updateProfile): " . $this->db->error);
+            $stmt->bind_param("sssi", $fullName, $bio, $fandomsString, $userId);
         }
-        return true;
+
+        if (!$stmt->execute()) {
+            return ['success' => false, 'message' => 'Failed to update profile'];
+        }
+        return ['success' => true];
     }
 
     // Search users
     public function searchUsers($keyword) {
         $like = "%$keyword%";
-        $stmt = $this->conn->prepare("
-            SELECT id, username, full_name, profile_image, fandoms
-            FROM users
-            WHERE username LIKE ? OR full_name LIKE ?
-        ");
-        $stmt->execute([$like, $like]);
-        return $stmt->fetchAll();
+        $sql  = "SELECT id, username, full_name, profile_image, fandoms
+                 FROM users WHERE username LIKE ? OR full_name LIKE ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) die("Query error (searchUsers): " . $this->db->error);
+        $stmt->bind_param("ss", $like, $like);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }
