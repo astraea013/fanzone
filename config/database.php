@@ -31,10 +31,10 @@ class Database {
         return $this->connection;
     }
 
-    // Prevent cloning
+
     private function __clone() {}
 
-    // Prevent unserializing
+ 
     public function __wakeup() {
         throw new Exception("Cannot unserialize singleton");
     }
