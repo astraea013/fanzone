@@ -110,6 +110,5 @@ class PostController {
         exit;
     }
 
-    //  SEARCH
-    
+   
 }

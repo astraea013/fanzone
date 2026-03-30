@@ -105,7 +105,7 @@ class CommentController {
         exit;
     }
 
-    // Delete comment (AJAX) - FIXED VERSION
+    // Delete comment (AJAX) 
     public function delete() {
         header('Content-Type: application/json');
         
@@ -127,7 +127,7 @@ class CommentController {
             exit;
         }
 
-        // FIXED: Removed double "echo echo" - now single echo
+        
         if (!$this->commentModel->isOwner($commentId, $userId)) {
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
             exit;

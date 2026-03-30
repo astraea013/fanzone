@@ -16,7 +16,7 @@ class AuthController {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
 
-            // Basic validation
+            
             if (empty($username) || empty($password)) {
                 $error = 'Please fill in all fields.';
             } else {

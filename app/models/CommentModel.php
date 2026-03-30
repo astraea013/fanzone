@@ -5,7 +5,6 @@ class CommentModel {
     private $db;
 
     public function __construct() {
-        // FIX: Use singleton getInstance() — constructor is private
         $this->db = Database::getInstance()->getConnection();
     }
 

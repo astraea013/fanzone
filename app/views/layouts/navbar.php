@@ -14,7 +14,7 @@ $themeIcon = $currentTheme === 'dark' ? '☀️' : '🌙';
 $themeText = $currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
 ?>
 
-<!-- REMOVED: Fixed theme toggle button -->
+
 
 <nav class="navbar">
   <a href="index.php?action=newsfeed" class="logo">FAN<span>ZONE</span></a>

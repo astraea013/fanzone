@@ -80,7 +80,7 @@ class UserModel {
         return $stats;
     }
 
-    // Get user fandoms — reads from users.fandoms column (comma-separated)
+    // Get user fandoms 
     public function getUserFandoms($userId) {
         $stmt = $this->db->prepare("SELECT fandoms FROM users WHERE id = ?");
         if (!$stmt) die("Query error (getUserFandoms): " . $this->db->error);

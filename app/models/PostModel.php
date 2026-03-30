@@ -70,7 +70,7 @@ class PostModel {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Create post - REMOVED: image parameter
+    // Create post
     public function createPost($userId, $content, $fandomTag) {
         $sql  = "INSERT INTO posts (user_id, content, fandom_tag, created_at)
                  VALUES (?, ?, ?, NOW())";

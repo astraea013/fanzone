@@ -1,17 +1,12 @@
 <?php
-/**
- * FANZONE — Global Helper Functions
- * Loaded via index.php — available to all views
- */
 
-// ── TIME AGO
-// FIX: Uses DateTime with explicit timezone to avoid "Just now" always showing
+
 if (!function_exists('timeAgo')) {
     function timeAgo($datetime) {
         if (empty($datetime)) return 'Unknown';
 
         try {
-            // Create DateTime from DB value (MySQL stores in server timezone)
+            
             $then = new DateTime($datetime);
             $now  = new DateTime('now');
 
@@ -33,7 +28,7 @@ if (!function_exists('timeAgo')) {
     }
 }
 
-// ── FANDOM BADGE CSS CLASS
+// 
 if (!function_exists('fandomBadgeClass')) {
     function fandomBadgeClass($fandom) {
         $key = strtolower(str_replace([' ', '-'], '', $fandom ?? ''));
@@ -58,7 +53,7 @@ if (!function_exists('userInitials')) {
     }
 }
 
-// ── SAFE HTML OUTPUT
+
 if (!function_exists('e')) {
     function e($string) {
         return htmlspecialchars($string ?? '', ENT_QUOTES, 'UTF-8');
