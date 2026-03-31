@@ -86,7 +86,6 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `content` text NOT NULL,
-  `image` varchar(255) DEFAULT NULL,
   `fandom_tag` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -98,9 +97,9 @@ CREATE TABLE IF NOT EXISTS `posts` (
 -- Dumping data for table `posts`
 --
 
-INSERT INTO `posts` (`id`, `user_id`, `content`, `image`, `fandom_tag`, `created_at`, `updated_at`) VALUES
-(2, 1, 'can\'t believe loki\'s voice is the same as gojo  xoxo', NULL, 'Anime', '2026-03-30 05:51:40', NULL),
-(3, 2, 'Experiences of the past have formed who I am now, \r\nand that flawed performance has also become the most important part of me.', NULL, 'Anime', '2026-03-30 06:17:51', NULL);
+INSERT INTO `posts` (`id`, `user_id`, `content`, `fandom_tag`, `created_at`, `updated_at`) VALUES
+(2, 1, 'can\'t believe loki\'s voice is the same as gojo  xoxo', 'Anime', '2026-03-30 05:51:40', NULL),
+(3, 2, 'Experiences of the past have formed who I am now, \r\nand that flawed performance has also become the most important part of me.', 'Anime', '2026-03-30 06:17:51', NULL);
 
 -- --------------------------------------------------------
 
