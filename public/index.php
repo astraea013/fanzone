@@ -54,7 +54,6 @@ switch ($action) {
         $post->delete();
         break;
 
-    // Comments - FIXED: All comment routes now properly use CommentController
     case 'add_comment':
         AuthController::requireLogin();
         $comment->add();
